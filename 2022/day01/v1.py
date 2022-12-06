@@ -1,3 +1,5 @@
+"""Day 1: Calorie Counting"""
+
 with open("input.txt", "r") as f:
     lines = f.readlines()
 

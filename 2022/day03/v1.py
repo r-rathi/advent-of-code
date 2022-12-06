@@ -1,3 +1,5 @@
+"""Day 3: Rucksack Reorganization"""
+
 import pathlib
 import string
 

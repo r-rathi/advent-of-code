@@ -1,16 +1,12 @@
 """"""
-import sys
+import math
 import pathlib
-
-
-def eval_exp(op, old):
-    new = eval(op, dict(old=old))
-    # print(f"eval: '{op}' with old={old} --> {new}")
-    return new
+import sys
+from copy import deepcopy
 
 
 class Monkey:
-    def __init__(self):  # , id, items, op, test, dst_t, dst_f):
+    def __init__(self):
         self.id = None
         self.items = []
         self.op = None
@@ -22,17 +18,23 @@ class Monkey:
     def __repr__(self):
         return f"Monkey({self.id}, {self.items}, {self.op}, {self.test}, {self.dst_t}, {self.dst_f})"
 
-    def play(self, monkeys: list["Monkey"], worry_div=1):
-        num_items = len(self.items)
-        self.count += num_items
-        for _ in range(num_items):
-            item = self.items.pop(0)
-            new = eval_exp(op=self.op, old=item)
-            new = new // worry_div
+    def play(self, monkeys: list["Monkey"], div, mod):
+        for item in self.items:
+            new = self.eval(old=item)
+            new = new // div
+            new = new % mod
             if new % self.test == 0:
                 monkeys[self.dst_t].items.append(new)
             else:
                 monkeys[self.dst_f].items.append(new)
+
+        self.count += len(self.items)
+        self.items = []
+
+    def eval(self, old):
+        new = eval(self.op, dict(old=old))
+        # print(f"eval: '{op}' with old={old} --> {new}")
+        return new
 
 
 def parse_input(lines):
@@ -64,45 +66,56 @@ def parse_input(lines):
     return monkeys
 
 
-def monkey_business(monkeys: list["Monkey"], num_rounds: int, worry_div: int):
-
+def monkey_business(monkeys: list["Monkey"], rounds: int, div: int, mod: int):
+    # print("begin:", [m.count for m in monkeys])
     # for i, monkey in enumerate(monkeys):
     #     print(i, monkey.items)
 
-    for r in range(1, num_rounds + 1):
+    for r in range(1, rounds + 1):
         for monkey in monkeys:
-            monkey.play(monkeys, worry_div)
+            monkey.play(monkeys=monkeys, div=div, mod=mod)
 
-        if r in [1, 20] or r % 100 == 0:
-            print("round:", r, [m.count for m in monkeys])
-            # for i, monkey in enumerate(monkeys):
-            #     print(i, monkey.items)
+        # if r in [1, 20] or r % 1000 == 0:
+        #     print(f"round {r}:", [m.count for m in monkeys])
+        #     for i, monkey in enumerate(monkeys):
+        #         print(i, monkey.items)
 
-    inspections = [m.count for m in monkeys]
-    inspections.sort(reverse=True)
-    return inspections[0] * inspections[1]
+    return math.prod(sorted(m.count for m in monkeys)[-2:])
 
 
-def part1(lines):
-    monkeys = parse_input(lines)
-    for monkey in monkeys:
-        print(monkey)
-    return monkey_business(monkeys, num_rounds=20, worry_div=3)
+def part1(monkeys):
+    return monkey_business(monkeys, rounds=20, div=3, mod=1)
 
 
-def part2(lines):
-    monkeys = parse_input(lines)
-    for monkey in monkeys:
-        print(monkey)
-    return monkey_business(monkeys, num_rounds=10000, worry_div=1)
+def part2(monkeys):
+    # With div now set to 1, the numbers (new = op(old)) start growing. To keep
+    # the indefinite growth in check, we rely on the following observations:
+    # 1. ops are either + or *
+    # 2. new + a is divisible by d iff (new - d) + a is divisible by d, or
+    #   (new - 2*d) + a, ..., or (new - q*d) + a is divisible by d, etc.
+    #   In other words, "reducing" new by any multiple of d does not change the
+    #   divisibility by d.
+    # 4. as items are thrown around, we are testing divisibility by divisors
+    #    d0, d1, ..., dn. Therefore, new can be reduced by d0 * d1 * ... * dn
+    #    without affecting the test for divisibility by any of d0, d1, ..., dn.
+    # 5. similar argument applies to new * b.
+    mod = math.prod(m.test for m in monkeys)
+    return monkey_business(monkeys, rounds=10000, div=1, mod=mod)
 
 
 def main():
     input_file = "input.txt" if len(sys.argv) == 1 else sys.argv[1]
     lines = pathlib.Path(input_file).read_text().splitlines()
 
-    print("part 1:", part1(lines))
-    print("part 2:", part2(lines))
+    monkeys = parse_input(lines)
+    # for monkey in monkeys:
+    #     print(monkey)
+
+    monkeys1 = monkeys
+    monkeys2 = deepcopy(monkeys)
+
+    print("part 1:", part1(monkeys1))
+    print("part 2:", part2(monkeys2))
 
 
 if __name__ == "__main__":

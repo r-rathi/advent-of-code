@@ -95,10 +95,10 @@ def part2(monkeys):
     #   (new - 2*d) + a, ..., or (new - q*d) + a is divisible by d, etc.
     #   In other words, "reducing" new by any multiple of d does not change the
     #   divisibility by d.
-    # 4. as items are thrown around, we are testing divisibility by divisors
+    # 3. as items are thrown around, we are testing divisibility by divisors
     #    d0, d1, ..., dn. Therefore, new can be reduced by d0 * d1 * ... * dn
     #    without affecting the test for divisibility by any of d0, d1, ..., dn.
-    # 5. similar argument applies to new * b.
+    # 4. similar argument applies to new * b.
     mod = math.prod(m.test for m in monkeys)
     return monkey_business(monkeys, rounds=10000, div=1, mod=mod)
 

@@ -23,7 +23,7 @@ def compare_ints(left, right):
 
 
 def compare_lists(left, right):
-    if len(left) != 0 and len(right) != 0:
+    if left and right:
         return compare(left[0], right[0]) or compare(left[1:], right[1:])
     return len(left) - len(right)
 

@@ -18,10 +18,69 @@ class Position(NamedTuple):
 
 
 class Grove:
+    edge_dirs = dict(
+        N=["N", "NW", "NE"],
+        S=["S", "SW", "SE"],
+        W=["W", "NW", "SW"],
+        E=["E", "NE", "SE"],
+    )
+    neighbors = dict(
+        N=Position(-1, 0),
+        S=Position(+1, 0),
+        W=Position(0, -1),
+        E=Position(0, +1),
+        NW=Position(-1, -1),
+        NE=Position(-1, +1),
+        SW=Position(+1, -1),
+        SE=Position(+1, +1),
+    )
+
     def __init__(self, elves: set[Position]):
         self.elves = elves
-        self.num_elves = len(elves)
         self.dir_order = ["N", "S", "W", "E"]
+
+    def propose_move(self, pos: Position) -> Position | None:
+        neighbors = {d: (pos + n) for d, n in self.neighbors.items()}
+        empty = {d: (n not in self.elves) for d, n in neighbors.items()}
+        if all(empty.values()):
+            return None
+        for direction in self.dir_order:
+            if all(empty[d] for d in self.edge_dirs[direction]):
+                return neighbors[direction]
+        return None
+
+    def update(self, moves: dict[Position, Position]) -> bool:
+        assert self.elves == moves.keys(), moves
+        next_elves = set(moves.values())
+        if moved := next_elves != self.elves:
+            self.elves = next_elves
+        return moved
+
+    def round(self) -> bool:
+        proposals: dict[Position, list[Position]] = {}
+        for elf in self.elves:
+            move = self.propose_move(elf)
+            if move is None:
+                proposals[elf] = [elf]
+            elif move in proposals:
+                proposals[move].append(elf)
+            else:
+                proposals[move] = [elf]
+
+        moves: dict[Position, Position] = {}
+        for move, elves in proposals.items():
+            assert len(elves) > 0, (move, elves)
+            if len(elves) == 1:
+                for elf in elves:
+                    moves[elf] = move
+            else:
+                for elf in elves:
+                    moves[elf] = elf
+
+        moved = self.update(moves)
+        self.dir_order.append(self.dir_order.pop(0))
+
+        return moved
 
     def region(self) -> tuple[Position, Position]:
         min_r = min(e.r for e in self.elves)
@@ -38,60 +97,6 @@ class Grove:
 
     def empty_ground(self) -> int:
         return self.area() - len(self.elves)
-
-    def propose_move(self, pos: Position) -> Position | None:
-        N1 = dict(
-            N=Position(-1, 0),
-            S=Position(+1, 0),
-            W=Position(0, -1),
-            E=Position(0, +1),
-        )
-        N3 = dict(
-            N=(Position(-1, c) for c in (-1, 0, 1)),
-            S=(Position(+1, c) for c in (-1, 0, 1)),
-            W=(Position(r, -1) for r in (-1, 0, 1)),
-            E=(Position(r, +1) for r in (-1, 0, 1)),
-        )
-        valid_moves = []
-        for d4 in self.dir_order:
-            if self.elves.isdisjoint(pos + nbr for nbr in N3[d4]):
-                valid_moves.append(pos + N1[d4])
-        if 0 < len(valid_moves) < 4:
-            return valid_moves[0]
-        return None
-
-    def update(self, moves) -> bool:
-        assert self.elves == moves.keys(), moves
-        next_elves = set(moves.values())
-        if moved := next_elves != self.elves:
-            self.elves = next_elves
-        return moved
-
-    def round(self) -> bool:
-        proposals = {}
-        for elf in self.elves:
-            move = self.propose_move(elf)
-            if move is None:
-                proposals[elf] = [elf]
-            elif move in proposals:
-                proposals[move].append(elf)
-            else:
-                proposals[move] = [elf]
-
-        moves = {}
-        for move, elves in proposals.items():
-            assert len(elves) > 0, (move, elves)
-            if len(elves) == 1:
-                for elf in elves:
-                    moves[elf] = move
-            else:
-                for elf in elves:
-                    moves[elf] = elf
-
-        moved = self.update(moves)
-        self.dir_order.append(self.dir_order.pop(0))
-
-        return moved
 
     def render(self, header=""):
         img = []

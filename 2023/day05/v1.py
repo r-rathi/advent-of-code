@@ -12,31 +12,26 @@ class Range(NamedTuple):
     def __repr__(self):
         return f"<{self.a}, {self.b}>"
 
+    def __bool__(self):
+        return self.a < self.b
+
 
 def map_range(src: Range, ranges: list[tuple[Range, int]]) -> list[Range]:
     dst = []
     x = src
     for r, l in sorted(ranges):
-        if x.b <= r.a:
-            y, x = x, None
-            dst.append(y)
-            break
+        if not x:
+            return dst
 
-        if x.a < r.a:
-            y, x = Range(x.a, r.a), Range(r.a, x.b)
+        if y := Range(x.a, min(x.b, r.a)):
             dst.append(y)
 
-        if x.b <= r.b:
-            y, x = Range(x.a + l, x.b + l), None
-            dst.append(y)
-        elif x.a < r.b:
-            y, x = Range(x.a + l, r.b + l), Range(r.b, x.b)
+        if y := Range(max(x.a, r.a) + l, min(x.b, r.b) + l):
             dst.append(y)
 
-        if x is None:
-            break
+        x = Range(max(x.a, r.b), x.b)
 
-    if x is not None:
+    if x:
         dst.append(x)
 
     return dst

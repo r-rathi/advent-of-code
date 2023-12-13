@@ -5,7 +5,6 @@ import itertools
 import math
 import pathlib
 import re
-import time
 
 
 def part1(network, instructions):
@@ -40,7 +39,7 @@ def part2(network, instructions):
 
         t_repeat = states[(node, t % num_insts)]
 
-        offset = sequence.index("Z")
+        # offset = sequence.index("Z")
         period = len(sequence) - t_repeat
         # print(offset, period)
 

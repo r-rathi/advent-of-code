@@ -26,6 +26,21 @@ def djikstra(graph, source):
     return dist, prev
 
 
+# Colormaps normalized to range(1, 10) and converted to 8-bit colors
+VIRIDIS = [54, 60, 67, 67, 73, 73, 114, 149, 227]
+PLASMA = [19, 55, 91, 133, 168, 210, 215, 221, 227]
+HOT = [16, 88, 160, 196, 208, 214, 226, 229, 231]
+CMAP = VIRIDIS
+
+
+def fg(text, color):
+    return "\33[38;5;" + str(color) + "m" + text + "\33[0m"
+
+
+def bg(text, color):
+    return "\33[48;5;" + str(color) + "m" + text + "\33[0m"
+
+
 DIRS = {
     (-1, 0): "^",
     (0, -1): "<",
@@ -130,7 +145,10 @@ class City:
         for r in range(self.R):
             row = []
             for c in range(self.C):
-                row.append(p.get((r, c), str(self.grid[r, c])))
+                heat = self.grid[r, c]
+                color = CMAP[heat - 1]
+                text = p.get((r, c), "")
+                row.append(bg(f"{text:2}", color))
             img.append("".join(row))
 
         print("\n".join(img))

@@ -8,10 +8,10 @@ def argmax(array):
     return max(range(len(array)), key=array.__getitem__)
 
 
-def max_joltage(bank: list[int], battries_on: int) -> int:
+def max_joltage(bank: list[int], batteries_on: int) -> int:
     digits = []
     batteries = bank[:]
-    for n in range(battries_on - 1, 0, -1):
+    for n in range(batteries_on - 1, 0, -1):
         i = argmax(batteries[:-n])
         digits.append(batteries[i])
         batteries = batteries[i + 1:]
@@ -30,8 +30,8 @@ def main():
     banks = [[int(d) for d in line] for line in lines]
     # print(banks)
 
-    print("part 1:", sum(max_joltage(bank, battries_on=2) for bank in banks))
-    print("part 2:", sum(max_joltage(bank, battries_on=12) for bank in banks))
+    print("part 1:", sum(max_joltage(bank, batteries_on=2) for bank in banks))
+    print("part 2:", sum(max_joltage(bank, batteries_on=12) for bank in banks))
 
 
 if __name__ == "__main__":

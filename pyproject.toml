@@ -5,6 +5,8 @@ description = "My Advent of Code solutions."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "matplotlib>=3.10.8",
+    "numpy>=2.3.5",
     "requests>=2.32.5",
     "ruff>=0.14.8",
     "sympy>=1.14.0",
